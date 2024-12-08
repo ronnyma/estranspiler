@@ -74,6 +74,7 @@ public class ES627VisitorTest {
                                          .must(new TermQueryBuilder("bostedsadresse.matrikkeladresse.bruksenhetsnummer.keyword", bruksenhet))
                                  )));
             """;
+
         CharStream input = CharStreams.fromString(boolQuery);
         ES627Lexer lexer = new ES627Lexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
