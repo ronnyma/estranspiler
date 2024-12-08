@@ -14,7 +14,7 @@ function
   ;
 
 boolQuery
-  : 'boolQuery()' ('.' ('must'|'should') LPAREN (termQuery|nestedQuery|boolQuery) RPAREN)+ (',ScoreMode.'('Max'|'Min'|'Avg'))*
+  : 'boolQuery()' ('.' ('must'|'should') LPAREN (termQuery|nestedQuery|boolQuery) RPAREN)+ (',ScoreMode.'('Max'|'Min'|'Avg'))?
   ;
 
 termQuery
