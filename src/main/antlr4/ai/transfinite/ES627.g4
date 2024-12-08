@@ -14,10 +14,11 @@ queries
   | nestedQuery
   | boolQuery
   | rangeQuery
+  | existsQuery
   ;
 
 boolQuery
-  : 'boolQuery()' ('.' memberFunctions LPAREN queries RPAREN)+  (COMMA scoremode)?
+  : 'boolQuery()' ('.minimumShouldMatch' '(' NUMBER ')')? ('.' memberFunctions LPAREN queries RPAREN)+  (COMMA scoremode)?
   ;
 
 rangeQuery
@@ -33,6 +34,11 @@ memberFunctions
 termQuery
   : 'new TermQueryBuilder('STRING','(STRING|bool|IDENTIFIER)('.'IDENTIFIER)*('()')*')'
   | 'termQuery('STRING','(STRING|bool|IDENTIFIER)('.'IDENTIFIER)*('()')*')'
+  ;
+
+existsQuery
+  : 'new TermQueryBuilder(('STRING')'
+  | 'existsQuery('STRING')'
   ;
 
 nestedQuery
@@ -67,3 +73,4 @@ LPAREN      : '(';
 RPAREN      : ')';
 COMMA       : ',';
 TERMINATOR : ';';
+MINIMUMSHOULDMATCH: 'minimumShouldMatch';

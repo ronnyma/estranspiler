@@ -132,6 +132,67 @@ public class ES627VisitorTest {
                 """;
         parse(boolQuery, expected);
 
+    }@Test
+    void parseQuery4() {
+        String boolQuery = """
+            boolQuery()
+                .minimumShouldMatch(1)
+                .should(
+                    nestedQuery("bostedsadresse",
+                        boolQuery()
+                            .should(
+                                boolQuery()
+                                    .must(termQuery("bostedsadresse.adresseIdentifikatorFraMatrikkelen.keyword", matrikkelidentifikator))
+                                    .must(termQuery("bostedsadresse.erGjeldende", true))
+                                    .mustNot(existsQuery("bostedsadresse.vegadresse.bruksenhetsnummer.keyword"))
+                                    .mustNot(existsQuery("bostedsadresse.matrikkeladresse.bruksenhetsnummer.keyword"))
+                            )
+                            .should(
+                                boolQuery()
+                                    .must(new TermQueryBuilder("bostedsadresse.adresseIdentifikatorFraMatrikkelen.keyword", matrikkelidentifikator))
+                                    .must(new TermQueryBuilder("bostedsadresse.erGjeldende", true))
+                                    .must(new TermQueryBuilder("bostedsadresse.vegadresse.bruksenhetsnummer.keyword", ""))
+                            )
+                            .should(
+                                boolQuery()
+                                    .must(new TermQueryBuilder("bostedsadresse.adresseIdentifikatorFraMatrikkelen.keyword", matrikkelidentifikator))
+                                    .must(new TermQueryBuilder("bostedsadresse.erGjeldende", true))
+                                    .must(new TermQueryBuilder("bostedsadresse.matrikkeladresse.bruksenhetsnummer.keyword", ""))
+                            )
+                        , ScoreMode.Max)
+                )
+                .should(
+                    nestedQuery("oppholdsadresse",
+                        boolQuery()
+                            .should(
+                                boolQuery()
+                                    .must(termQuery("oppholdsadresse.adresseIdentifikatorFraMatrikkelen.keyword", matrikkelidentifikator))
+                                    .must(termQuery("oppholdsadresse.erGjeldende", true))
+                                    .mustNot(existsQuery("oppholdsadresse.vegadresse.bruksenhetsnummer.keyword"))
+                                    .mustNot(existsQuery("oppholdsadresse.matrikkeladresse.bruksenhetsnummer.keyword"))
+                            )
+                            .should(
+                                boolQuery()
+                                    .must(new TermQueryBuilder("oppholdsadresse.adresseIdentifikatorFraMatrikkelen.keyword", matrikkelidentifikator))
+                                    .must(new TermQueryBuilder("oppholdsadresse.erGjeldende", true))
+                                    .must(new TermQueryBuilder("oppholdsadresse.vegadresse.bruksenhetsnummer.keyword", ""))
+                            )
+                            .should(
+                                boolQuery()
+                                    .must(new TermQueryBuilder("oppholdsadresse.adresseIdentifikatorFraMatrikkelen.keyword", matrikkelidentifikator))
+                                    .must(new TermQueryBuilder("oppholdsadresse.erGjeldende", true))
+                                    .must(new TermQueryBuilder("oppholdsadresse.matrikkeladresse.bruksenhetsnummer.keyword", ""))
+                            )
+                        , ScoreMode.Max)
+                );
+            """;
+
+        final String expected =
+            """
+                (query (expression (queries (boolQuery boolQuery() .minimumShouldMatch ( 1 ) . (memberFunctions should) ( (queries (nestedQuery nestedQuery ( "bostedsadresse" , (boolQuery boolQuery() . (memberFunctions should) ( (queries (boolQuery boolQuery() . (memberFunctions must) ( (queries (termQuery termQuery( "bostedsadresse.adresseIdentifikatorFraMatrikkelen.keyword" , matrikkelidentifikator ))) ) . (memberFunctions must) ( (queries (termQuery termQuery( "bostedsadresse.erGjeldende" , (bool true) ))) ) . (memberFunctions mustNot) ( (queries (existsQuery existsQuery( "bostedsadresse.vegadresse.bruksenhetsnummer.keyword" ))) ) . (memberFunctions mustNot) ( (queries (existsQuery existsQuery( "bostedsadresse.matrikkeladresse.bruksenhetsnummer.keyword" ))) ))) ) . (memberFunctions should) ( (queries (boolQuery boolQuery() . (memberFunctions must) ( (queries (termQuery new TermQueryBuilder( "bostedsadresse.adresseIdentifikatorFraMatrikkelen.keyword" , matrikkelidentifikator ))) ) . (memberFunctions must) ( (queries (termQuery new TermQueryBuilder( "bostedsadresse.erGjeldende" , (bool true) ))) ) . (memberFunctions must) ( (queries (termQuery new TermQueryBuilder( "bostedsadresse.vegadresse.bruksenhetsnummer.keyword" , "" ))) ))) ) . (memberFunctions should) ( (queries (boolQuery boolQuery() . (memberFunctions must) ( (queries (termQuery new TermQueryBuilder( "bostedsadresse.adresseIdentifikatorFraMatrikkelen.keyword" , matrikkelidentifikator ))) ) . (memberFunctions must) ( (queries (termQuery new TermQueryBuilder( "bostedsadresse.erGjeldende" , (bool true) ))) ) . (memberFunctions must) ( (queries (termQuery new TermQueryBuilder( "bostedsadresse.matrikkeladresse.bruksenhetsnummer.keyword" , "" ))) ))) ) , (scoremode ScoreMode.Max)) ))) ) . (memberFunctions should) ( (queries (nestedQuery nestedQuery ( "oppholdsadresse" , (boolQuery boolQuery() . (memberFunctions should) ( (queries (boolQuery boolQuery() . (memberFunctions must) ( (queries (termQuery termQuery( "oppholdsadresse.adresseIdentifikatorFraMatrikkelen.keyword" , matrikkelidentifikator ))) ) . (memberFunctions must) ( (queries (termQuery termQuery( "oppholdsadresse.erGjeldende" , (bool true) ))) ) . (memberFunctions mustNot) ( (queries (existsQuery existsQuery( "oppholdsadresse.vegadresse.bruksenhetsnummer.keyword" ))) ) . (memberFunctions mustNot) ( (queries (existsQuery existsQuery( "oppholdsadresse.matrikkeladresse.bruksenhetsnummer.keyword" ))) ))) ) . (memberFunctions should) ( (queries (boolQuery boolQuery() . (memberFunctions must) ( (queries (termQuery new TermQueryBuilder( "oppholdsadresse.adresseIdentifikatorFraMatrikkelen.keyword" , matrikkelidentifikator ))) ) . (memberFunctions must) ( (queries (termQuery new TermQueryBuilder( "oppholdsadresse.erGjeldende" , (bool true) ))) ) . (memberFunctions must) ( (queries (termQuery new TermQueryBuilder( "oppholdsadresse.vegadresse.bruksenhetsnummer.keyword" , "" ))) ))) ) . (memberFunctions should) ( (queries (boolQuery boolQuery() . (memberFunctions must) ( (queries (termQuery new TermQueryBuilder( "oppholdsadresse.adresseIdentifikatorFraMatrikkelen.keyword" , matrikkelidentifikator ))) ) . (memberFunctions must) ( (queries (termQuery new TermQueryBuilder( "oppholdsadresse.erGjeldende" , (bool true) ))) ) . (memberFunctions must) ( (queries (termQuery new TermQueryBuilder( "oppholdsadresse.matrikkeladresse.bruksenhetsnummer.keyword" , "" ))) ))) ) , (scoremode ScoreMode.Max)) ))) )))) ;)
+                """;
+        parse(boolQuery, expected);
+
     }
 
 
