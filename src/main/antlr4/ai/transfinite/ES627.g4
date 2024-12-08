@@ -6,23 +6,49 @@ query
 
  expression
   : expression '.' expression
-  | function
+  | queries
   ;
 
-function
-  : boolQuery
+queries
+  : termQuery
+  | nestedQuery
+  | boolQuery
+  | rangeQuery
   ;
 
 boolQuery
-  : 'boolQuery()' ('.' ('must'|'should') LPAREN (termQuery|nestedQuery|boolQuery) RPAREN)+ (',' 'ScoreMode.Max')?
+  : 'boolQuery()' ('.' memberFunctions LPAREN queries RPAREN)+  (COMMA scoremode)?
+  ;
+
+rangeQuery
+  : 'rangeQuery('STRING')' '.' intervals '(' STRING ')'
+  ;
+
+memberFunctions
+  : 'must'
+  | 'should'
+  | 'mustNot'
   ;
 
 termQuery
-  : 'new TermQueryBuilder('STRING', '(STRING|bool|IDENTIFIER)')'
+  : 'new TermQueryBuilder('STRING','(STRING|bool|IDENTIFIER)('.'IDENTIFIER)*('()')*')'
+  | 'termQuery('STRING','(STRING|bool|IDENTIFIER)('.'IDENTIFIER)*('()')*')'
   ;
 
 nestedQuery
   : 'nestedQuery' LPAREN STRING ',' (boolQuery|nestedQuery) RPAREN
+  ;
+
+scoremode
+  : 'ScoreMode.Max'
+  | 'ScoreMode.Min'
+  ;
+
+intervals
+  : 'lte'
+  | 'gte'
+  | 'gt'
+  | 'lt'
   ;
 
 bool
@@ -30,12 +56,14 @@ bool
  | FALSE
  ;
 
-TRUE         : 'true';
-FALSE        : 'false';
-SPACE      : [ \t\r\n]+ -> skip;
-NUMBER     : ( [0-9]* '.' )? [0-9]+;
-STRING     : '"' .*? '"';
-IDENTIFIER : [a-zA-Z_][a-zA-Z_0-9]*;           // Matches variable names
-LPAREN     : '(' ;                    // Open parenthesis
-RPAREN     : ')' ;                    // Close parenthesis
+
+WS: [ \t\r\n\u000C]+ -> skip;
+TRUE        : 'true';
+FALSE       : 'false';
+NUMBER      : ( [0-9]* '.' )? [0-9]+;
+STRING      : '"' .*? '"';
+IDENTIFIER  : [a-zA-Z_][a-zA-Z_0-9]*;
+LPAREN      : '(';
+RPAREN      : ')';
+COMMA       : ',';
 TERMINATOR : ';';
