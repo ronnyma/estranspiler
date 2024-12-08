@@ -22,7 +22,7 @@ boolQuery
   ;
 
 rangeQuery
-  : 'rangeQuery('STRING')' '.' intervals '(' STRING ')'
+  : 'rangeQuery('STRING')' '.' intervals '(' STRING ')' # Range
   ;
 
 memberFunctions
@@ -32,8 +32,8 @@ memberFunctions
   ;
 
 termQuery
-  : 'new TermQueryBuilder('STRING','(STRING|bool|IDENTIFIER)('.'IDENTIFIER)*('()')*')'
-  | 'termQuery('STRING','(STRING|bool|IDENTIFIER)('.'IDENTIFIER)*('()')*')'
+  : 'new TermQueryBuilder('STRING','(STRING|bool|IDENTIFIER)('.'IDENTIFIER)*('()')*')'  # TermQry
+  | 'termQuery('STRING','(STRING|bool|IDENTIFIER)('.'IDENTIFIER)*('()')*')'             # TermQry
   ;
 
 existsQuery
@@ -63,7 +63,7 @@ bool
  ;
 
 
-WS: [ \t\r\n\u000C]+ -> skip;
+WS          : [ \t\r\n\u000C]+ -> skip;
 TRUE        : 'true';
 FALSE       : 'false';
 NUMBER      : ( [0-9]* '.' )? [0-9]+;
@@ -72,5 +72,5 @@ IDENTIFIER  : [a-zA-Z_][a-zA-Z_0-9]*;
 LPAREN      : '(';
 RPAREN      : ')';
 COMMA       : ',';
-TERMINATOR : ';';
-MINIMUMSHOULDMATCH: 'minimumShouldMatch';
+TERMINATOR  : ';';
+MINIMUMSHOULDMATCH  : 'minimumShouldMatch';
