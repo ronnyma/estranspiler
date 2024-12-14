@@ -79,19 +79,29 @@
     </dependency>
     <dependency>
       <artifactId>antlr4-maven-plugin</artifactId>
-      <groupId>org.antlr</groupId>
-      <version>${antlr.versio}</version>
       <exclusions>
         <exclusion>
-          <groupId>org.slf4j</groupId>
           <artifactId>slf4j-api</artifactId>
+          <groupId>org.slf4j</groupId>
         </exclusion>
         <exclusion>
-          <groupId>org.slf4j</groupId>
           <artifactId>slf4j-simple</artifactId>
+          <groupId>org.slf4j</groupId>
         </exclusion>
       </exclusions>
+      <groupId>org.antlr</groupId>
+      <version>${antlr.versio}</version>
     </dependency>
+    <dependency>
+      <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+      <groupId>org.springframework.boot</groupId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.15.0</version>
+    </dependency>
+
     <dependency>
       <artifactId>spring-boot-starter-test</artifactId>
       <groupId>org.springframework.boot</groupId>
