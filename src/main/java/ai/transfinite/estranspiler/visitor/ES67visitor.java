@@ -44,7 +44,9 @@ public class ES67visitor extends ES67BaseVisitor<String> {
         } else if (ctx.SHOULD() != null) {
             final String s = visit(ctx.subQueryExpr());
             return "b -> b.should(" + s + ")";
-
+        } else if (ctx.MUSTNOT() != null) {
+            final String s = visit(ctx.subQueryExpr());
+            return "b -> b.mustNot(" + s + ")";
         }
         return "";
     }

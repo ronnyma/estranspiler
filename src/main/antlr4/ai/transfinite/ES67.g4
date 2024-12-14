@@ -9,13 +9,14 @@ query
 boolQueryExpr
     // Matches a pattern like:
     // boolQuery() .must(...) .must(...)
-    : BOOLQUERY LPAREN RPAREN ( DOT boolClause )*   # BoolQuery
+    : BOOLQUERY LPAREN RPAREN ( DOT boolClause )*    # BoolQuery
     ;
 
 boolClause
     // .must(<subQuery>)
     : MUST LPAREN subQueryExpr RPAREN
     | SHOULD LPAREN subQueryExpr RPAREN
+    | MUSTNOT LPAREN subQueryExpr RPAREN
     ;
 
  subQueryExpr
@@ -36,6 +37,10 @@ matchQueryExpr
     : MATCHQUERY LPAREN variable COMMA variable RPAREN
     ;
 
+scoremode
+  : 'ScoreMode.Max'
+  | 'ScoreMode.Min'
+  ;
 
 variable
     : identifier
@@ -62,6 +67,7 @@ TERMQUERY   : 'termQuery'
 MATCHQUERY  : 'matchQuery' ;
 MUST        : 'must' ;
 SHOULD      : 'should' ;
+MUSTNOT     : 'mustNot' ;
 DOT         : '.' ;
 COMMA       : ',' ;
 LPAREN      : '(' ;
@@ -76,3 +82,4 @@ IDENTIFIER  : [A-Za-z][A-Z-a-z0-9]+;
 WS
     : [ \t\r\n]+ -> skip
     ;
+

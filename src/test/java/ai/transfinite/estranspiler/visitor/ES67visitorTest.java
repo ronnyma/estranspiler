@@ -3,6 +3,7 @@ package ai.transfinite.estranspiler.visitor;
 import ai.transfinite.ES67Lexer;
 import ai.transfinite.ES67Parser;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import co.elastic.clients.elasticsearch.core.search.ScoreMode;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -21,6 +22,14 @@ class ES67visitorTest {
         eval.visit(tree);
     }
 
+    void example() {
+        BoolQuery.of(b -> b.must(s -> s.term(f -> f.field("identifikasjonsnummer.type.keyword").value("D_NUMMER")))
+            .must(s -> s.term(f -> f.field("identifikasjonsnummer.status.keyword").value("variabel")))
+            .must(s -> s.term(f -> f.field("identifikasjonsnummer.erGjeldende").value(true)))
+            .should(s -> s.term(f -> f.field("identifikasjonsnummer.erGjeldende").value(true)))
+            .should(s -> s.match(f -> f.field("identifikasjonsnummer.erGjeldende").query(true))));
+
+    }
 
     @Test
     void parseQuery3() {
@@ -30,7 +39,8 @@ class ES67visitorTest {
                  .must(termQuery("identifikasjonsnummer.status.keyword", variabel))
                  .must(new TermQueryBuilder("identifikasjonsnummer.erGjeldende", true))
                  .should(termQuery("identifikasjonsnummer.erGjeldende", true))
-                 .should(matchQuery("identifikasjonsnummer.erGjeldende", true))
+                 .mustNot(termQuery("identifikasjonsnummer.erGjeldende", true))
+                 .should(matchQuery("identifikasjonsnummer.erGjeldende", true)))
             """;
         parse(boolQuery);
 
