@@ -1,4 +1,4 @@
-# EStranspiler
+# Querygenerator 2
 
-## Convert/transpile from ES6 to ES7
-This application is a backup, in case the QueryGenerator becomes unstable, as it's complexity increases exponentially
+## A modern approach to create the query
+Instead of the tedious querygenerator, a nouvel is now possible
