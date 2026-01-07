@@ -129,6 +129,27 @@ class RegisterDSLVisitorTest {
     }
 
     @Test
+    void testHarIkkeOperator() {
+        String input = """
+            {
+              "entity" : "sivilstand.sivilstand",
+              "operator" : "harIkke",
+              "verdi" : "gift",
+              "ergjeldende" : true
+            }
+            """;
+
+        String result = parse(input);
+        assertNotNull(result);
+
+        // Verify it uses must_not instead of must
+        assertTrue(result.contains("\"must_not\""), "Should contain must_not clause for harIkke operator");
+        assertFalse(result.contains("\"must\""), "Should not contain must clause for harIkke operator");
+        assertTrue(result.contains("\"document.sivilstand.sivilstand\": \"gift\""), "Should contain term query for entity");
+        assertTrue(result.contains("\"document.sivilstand.ergjeldende\": true"), "Should contain term query for ergjeldende");
+    }
+
+    @Test
     void testArrayOfDslObjects() {
         String input = """
             [
@@ -162,5 +183,33 @@ class RegisterDSLVisitorTest {
         // Verify second DSL object
         assertTrue(result.contains("\"document.sivilstand.sivilstand\": \"ugift\""), "Should contain second term query");
         assertTrue(result.contains("\"document.sivilstand.ergjeldede\": false"), "Should contain second ergjeldende query");
+    }
+
+    @Test
+    void testArrayWithMixedOperators() {
+        String input = """
+            [
+            {
+              "entity" : "sivilstand.sivilstand",
+              "operator" : "har",
+              "verdi" : "gift",
+              "ergjeldende" : true
+            },
+            {
+              "entity" : "sivilstand.sivilstand",
+              "operator" : "harIkke",
+              "verdi" : "ugift",
+              "ergjeldende" : false
+            }]
+            """;
+
+        String result = parse(input);
+        assertNotNull(result);
+
+        // Verify structure contains both must and must_not
+        assertTrue(result.contains("\"must\""), "Should contain must clause");
+        assertTrue(result.contains("\"must_not\""), "Should contain must_not clause");
+        assertTrue(result.contains("\"document.sivilstand.sivilstand\": \"gift\""), "Should contain first term query");
+        assertTrue(result.contains("\"document.sivilstand.sivilstand\": \"ugift\""), "Should contain second term query");
     }
 }

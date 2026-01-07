@@ -89,11 +89,18 @@ public class RegisterDSLVisitor extends RegisterDSLBaseVisitor<String> {
         visit(ctx.fields());
 
         String entity = stripQuotes(fieldMap.get("entity"));
+        String operator = stripQuotes(fieldMap.get("operator"));
         String verdi = fieldMap.get("verdi");
         String ergjeldende = fieldMap.get("ergjeldende");
 
         if (entity == null || verdi == null) {
             throw new IllegalArgumentException("Missing required fields: entity or verdi");
+        }
+        
+        // Determine which clause type to use based on operator
+        String clauseType = "must";
+        if ("harIkke".equals(operator)) {
+            clauseType = "must_not";
         }
 
         String[] parts = entity.split("\\.", 2);
@@ -102,7 +109,7 @@ public class RegisterDSLVisitor extends RegisterDSLBaseVisitor<String> {
 
         StringBuilder clause = new StringBuilder();
         clause.append("{\n");
-        clause.append("              \"must\": [\n");
+        clause.append("              \"").append(clauseType).append("\": [\n");
         clause.append("                {\n");
         clause.append("                  \"term\": {\n");
         clause.append("                    \"document.").append(fullField).append("\": ").append(verdi).append("\n");
@@ -135,11 +142,18 @@ public class RegisterDSLVisitor extends RegisterDSLBaseVisitor<String> {
 
         // Extract values from the map
         String entity = stripQuotes(fieldMap.get("entity"));
+        String operator = stripQuotes(fieldMap.get("operator"));
         String verdi = fieldMap.get("verdi");
         String ergjeldende = fieldMap.get("ergjeldende");
 
         if (entity == null || verdi == null) {
             throw new IllegalArgumentException("Missing required fields: entity or verdi");
+        }
+        
+        // Determine which clause type to use based on operator
+        String clauseType = "must";
+        if ("harIkke".equals(operator)) {
+            clauseType = "must_not";
         }
 
         // Parse the entity field to extract path and field name
@@ -156,7 +170,7 @@ public class RegisterDSLVisitor extends RegisterDSLBaseVisitor<String> {
         query.append("      \"path\": \"document.").append(basePath).append("\",\n");
         query.append("      \"query\": {\n");
         query.append("        \"bool\": {\n");
-        query.append("          \"must\": [\n");
+        query.append("          \"").append(clauseType).append("\": [\n");
         
         // First term query: document.<entity> = <verdi>
         query.append("            { \"term\": { \"document.").append(fullField).append("\": ");
