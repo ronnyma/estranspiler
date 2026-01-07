@@ -5,14 +5,125 @@ import ai.transfinite.RegisterDSLParser.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class RegisterDSLVisitor extends RegisterDSLBaseVisitor<String> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RegisterDSLVisitor.class);
 
     private final Map<String, String> fieldMap = new HashMap<>();
+
+    @Override
+    public String visitSingleDsl(SingleDslContext ctx) {
+        // For single DSL, generate simple structure
+        return visitDsl(ctx.dsl());
+    }
+
+    @Override
+    public String visitMultipleDsl(MultipleDslContext ctx) {
+        // For array of DSLs, generate nested bool structure
+        return visitDslArray(ctx.dslArray());
+    }
+
+    @Override
+    public String visitDslArray(DslArrayContext ctx) {
+        // Process each DSL in the array
+        List<DslContext> dslList = ctx.dsl();
+        
+        if (dslList.isEmpty()) {
+            throw new IllegalArgumentException("DSL array cannot be empty");
+        }
+
+        // Extract base path from first DSL
+        String basePath = extractBasePath(dslList.get(0));
+
+        // Build the nested query with multiple must clauses
+        StringBuilder query = new StringBuilder();
+        query.append("{\n");
+        query.append("  \"query\": {\n");
+        query.append("    \"nested\": {\n");
+        query.append("      \"path\": \"document.").append(basePath).append("\",\n");
+        query.append("      \"query\": {\n");
+        query.append("        \"bool\": {\n");
+        query.append("          \"must\": [\n");
+
+        // Add each DSL as a nested must clause
+        for (int i = 0; i < dslList.size(); i++) {
+            String dslMustClause = buildDslMustClause(dslList.get(i));
+            query.append("            ").append(dslMustClause);
+            if (i < dslList.size() - 1) {
+                query.append(",");
+            }
+            query.append("\n");
+        }
+
+        query.append("          ]\n");
+        query.append("        }\n");
+        query.append("      }\n");
+        query.append("    }\n");
+        query.append("  }\n");
+        query.append("}");
+
+        String result = query.toString();
+        LOGGER.info("Generated query:\n{}", result);
+        return result;
+    }
+
+    private String extractBasePath(DslContext ctx) {
+        fieldMap.clear();
+        visit(ctx.fields());
+        String entity = stripQuotes(fieldMap.get("entity"));
+        if (entity == null) {
+            throw new IllegalArgumentException("Missing required field: entity");
+        }
+        String[] parts = entity.split("\\.", 2);
+        return parts[0];
+    }
+
+    private String buildDslMustClause(DslContext ctx) {
+        fieldMap.clear();
+        visit(ctx.fields());
+
+        String entity = stripQuotes(fieldMap.get("entity"));
+        String verdi = fieldMap.get("verdi");
+        String ergjeldende = fieldMap.get("ergjeldende");
+
+        if (entity == null || verdi == null) {
+            throw new IllegalArgumentException("Missing required fields: entity or verdi");
+        }
+
+        String[] parts = entity.split("\\.", 2);
+        String basePath = parts[0];
+        String fullField = entity;
+
+        StringBuilder clause = new StringBuilder();
+        clause.append("{\n");
+        clause.append("              \"must\": [\n");
+        clause.append("                {\n");
+        clause.append("                  \"term\": {\n");
+        clause.append("                    \"document.").append(fullField).append("\": ").append(verdi).append("\n");
+        clause.append("                  }\n");
+        clause.append("                }");
+
+        if (ergjeldende != null) {
+            clause.append(",\n");
+            clause.append("                {\n");
+            clause.append("                  \"term\": {\n");
+            clause.append("                    \"document.").append(basePath).append(".ergjeldede\": ").append(ergjeldende).append("\n");
+            clause.append("                  }\n");
+            clause.append("                }");
+        }
+
+        clause.append("\n");
+        clause.append("              ]\n");
+        clause.append("            }");
+
+        return clause.toString();
+    }
 
     @Override
     public String visitDsl(DslContext ctx) {
@@ -51,7 +162,7 @@ public class RegisterDSLVisitor extends RegisterDSLBaseVisitor<String> {
         query.append("            { \"term\": { \"document.").append(fullField).append("\": ");
         query.append(verdi).append(" } }");
 
-        // Second term query: document.<basePath>.ergjeldende = <ergjeldende> (if present)
+        // Second term query: <basePath>.ergjeldende = <ergjeldende> (if present)
         if (ergjeldende != null) {
             query.append(",\n");
             query.append("            { \"term\": { \"document.").append(basePath).append(".ergjeldende\": ");

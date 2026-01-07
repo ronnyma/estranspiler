@@ -2,6 +2,15 @@ grammar RegisterDSL;
 
 // ---- Parser Rules ----
 
+root
+    : dsl           # SingleDsl
+    | dslArray      # MultipleDsl
+    ;
+
+dslArray
+    : LBRACKET dsl (COMMA dsl)* RBRACKET
+    ;
+
 dsl
     : LBRACE fields RBRACE
     ;
@@ -24,6 +33,8 @@ value
 
 LBRACE      : '{' ;
 RBRACE      : '}' ;
+LBRACKET    : '[' ;
+RBRACKET    : ']' ;
 COLON       : ':' ;
 COMMA       : ',' ;
 

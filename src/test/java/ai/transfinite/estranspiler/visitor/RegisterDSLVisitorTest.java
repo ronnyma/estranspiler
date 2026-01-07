@@ -17,7 +17,7 @@ class RegisterDSLVisitorTest {
         RegisterDSLLexer lexer = new RegisterDSLLexer(charStream);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         RegisterDSLParser parser = new RegisterDSLParser(tokens);
-        ParseTree tree = parser.dsl();
+        ParseTree tree = parser.root();
         RegisterDSLVisitor visitor = new RegisterDSLVisitor();
         return visitor.visit(tree);
     }
@@ -126,5 +126,41 @@ class RegisterDSLVisitorTest {
 
         assertThrows(IllegalArgumentException.class, () -> parse(input), 
             "Should throw exception when verdi field is missing");
+    }
+
+    @Test
+    void testArrayOfDslObjects() {
+        String input = """
+            [
+            {
+              "entity" : "sivilstand.sivilstand",
+              "operator" : "har",
+              "verdi" : "gift",
+              "ergjeldende" : true
+            },
+            {
+              "entity" : "sivilstand.sivilstand",
+              "operator" : "har",
+              "verdi" : "ugift",
+              "ergjeldende" : false
+            }]
+            """;
+
+        String result = parse(input);
+        assertNotNull(result);
+
+        // Verify structure
+        assertTrue(result.contains("\"nested\""), "Should contain nested query");
+        assertTrue(result.contains("\"path\": \"document.sivilstand\""), "Should have correct nested path");
+        assertTrue(result.contains("\"bool\""), "Should contain bool query");
+        assertTrue(result.contains("\"must\""), "Should contain must clauses");
+        
+        // Verify first DSL object
+        assertTrue(result.contains("\"document.sivilstand.sivilstand\": \"gift\""), "Should contain first term query");
+        assertTrue(result.contains("\"document.sivilstand.ergjeldede\": true"), "Should contain first ergjeldende query");
+        
+        // Verify second DSL object
+        assertTrue(result.contains("\"document.sivilstand.sivilstand\": \"ugift\""), "Should contain second term query");
+        assertTrue(result.contains("\"document.sivilstand.ergjeldede\": false"), "Should contain second ergjeldende query");
     }
 }
