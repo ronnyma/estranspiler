@@ -73,14 +73,24 @@ Generated ANTLR sources are placed in `target/generated-sources/antlr4/` and aut
 src/
 ├── main/
 │   ├── antlr4/ai/transfinite/      # ANTLR grammar files
+│   │   ├── ES67.g4                 # ES6 to ES7 transpiler grammar
+│   │   └── RegisterDSL.g4          # Register DSL to ES query grammar
 │   ├── java/ai/transfinite/estranspiler/
 │   │   ├── visitor/                # Visitor implementations
+│   │   │   ├── ES67visitor.java
+│   │   │   └── RegisterDSLVisitor.java
+│   │   ├── listener/               # Listener implementations
+│   │   │   └── RegisterDSLListener.java
 │   │   └── EstranspilerApplication.java
 │   └── resources/
 │       └── application.properties
 └── test/
-    └── java/ai/transfinite/estranspiler/visitor/
-        └── ES67visitorTest.java    # Parser/visitor tests
+    └── java/ai/transfinite/estranspiler/
+        ├── visitor/
+        │   ├── ES67visitorTest.java
+        │   └── RegisterDSLVisitorTest.java
+        └── listener/
+            └── RegisterDSLListenerTest.java
 ```
 
 ## Working with ANTLR Grammar
@@ -103,8 +113,45 @@ The visitor transforms each AST node to ES7 syntax by:
 3. Assembling output strings with lambda syntax
 4. Normalizing formatting (line breaks, indentation)
 
+## RegisterDSL Transpiler
+
+### Overview
+Transpiles Register DSL (JSON-based query language) to Elasticsearch nested queries using the Elasticsearch Java Client API with functional syntax.
+
+**Example transformation:**
+- Input: `{"entity": "sivilstand.sivilstand", "operator": "har", "verdi": "gift", "ergjeldende": true}`
+- Output: Elasticsearch `Query` object with nested/bool/term structure
+
+### Two Implementations
+
+**Visitor Pattern** (`RegisterDSLVisitor.java`):
+- Pull-based traversal with explicit control
+- Returns `Query` objects directly
+- Simpler state management
+- **Recommended** for this use case
+
+**Listener Pattern** (`RegisterDSLListener.java`):
+- Event-driven with automatic traversal
+- Uses `ParseTreeWalker`
+- More state management (stacks)
+- Good for multiple analyses on same tree
+
+See `VISITOR_VS_LISTENER.md` for detailed comparison.
+
+### Key Features
+- **Operators**: `har` (must) and `harIkke` (must_not)
+- **Array support**: Multiple DSL objects wrapped in outer bool query
+- **Field prefixing**: Automatically adds `document.` prefix to entity fields
+- **Type handling**: Supports string, boolean, and number values in term queries
+
+### Grammar Structure
+- **Root rule**: Accepts single DSL object or array of objects
+- **DSL object**: JSON with `entity`, `operator`, `verdi`, `ergjeldende` fields
+- **Values**: String (quoted), boolean, or number literals
+
 ## Development Notes
-- ANTLR-generated classes (`ES67Lexer`, `ES67Parser`, `ES67BaseVisitor`) are in `target/generated-sources/antlr4/`
-- Never edit generated ANTLR files directly - modify `ES67.g4` instead
-- The visitor returns `String` representations of ES7 code (could be enhanced to return AST objects)
-- Tests in `ES67visitorTest` use ANTLR's `CharStream` and `CommonTokenStream` to parse test input
+- ANTLR-generated classes are in `target/generated-sources/antlr4/`
+- Never edit generated ANTLR files directly - modify `.g4` grammar files instead
+- ES67 visitor returns `String` representations of ES7 code
+- RegisterDSL visitor/listener return Elasticsearch `Query` objects
+- Tests use ANTLR's `CharStream` and `CommonTokenStream` to parse input
